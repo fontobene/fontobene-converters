@@ -2,6 +2,10 @@
 
 Convert other fonts to FontoBene!
 
+## Supported Formats
+
+* `.lff` (LibreCAD Fonts)
+
 ## License
 
 Licensed under either of
