@@ -13,9 +13,9 @@ def convert_arc(match):
     """
     Convert LFF angles to FontoBene angles.
     """
-    val = float(match.group()[1:])
+    val = float(match.group()[2:])
     converted_deg = math.atan(val) * 4 / math.pi
-    return str(converted_deg * 9)
+    return ',{}'.format(converted_deg * 9)
 
 
 def convert_ref(match):
@@ -45,7 +45,7 @@ if __name__ == '__main__':
         lines = f.readlines()
 
     # Match regexes
-    arc_re = re.compile(r'A-?[0-9\.]+')
+    arc_re = re.compile(r',A-?[0-9\.]+')
     ref_re = re.compile(r'C([0-9a-fA-F]{4,6})')
     metadata_string_re = re.compile(r'#\s*([a-zA-Z0-9]*):\s+(.+)')
     codepoint_re = re.compile(r'^(\[[0-9a-zA-Z]{4,6}\])(.*)')
@@ -55,7 +55,8 @@ if __name__ == '__main__':
     metadata = {}
     out = []
     for line in lines:
-        converted = arc_re.sub(convert_arc, line)
+        converted = line
+        converted = arc_re.sub(convert_arc, converted)
         converted = ref_re.sub(convert_ref, converted)
         converted = codepoint_re.sub(convert_codepoint, converted)
 
