@@ -48,7 +48,7 @@ if __name__ == '__main__':
     out = []
     for line in lines:
         converted = arc_re.sub(convert_arc, line)
-        converted = codepoint_re.sub(convert_codepoint, line)
+        converted = codepoint_re.sub(convert_codepoint, converted)
 
         matches = metadata_string_re.match(line)
         if matches:
