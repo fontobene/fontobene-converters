@@ -18,6 +18,14 @@ def convert_arc(match):
     return str(converted_deg * 9)
 
 
+def convert_codepoint(match):
+    """
+    Convert LFF codepoints to FontoBene codepoints.
+    """
+    groups = match.groups()
+    return '{}{}'.format(groups[0].upper(), groups[1])
+
+
 if __name__ == '__main__':
 
     # Validate args
@@ -32,6 +40,7 @@ if __name__ == '__main__':
     # Match regexes
     arc_re = re.compile(r'A-?[0-9\.]+')
     metadata_string_re = re.compile(r'#\s*([a-zA-Z0-9]*):\s+(.+)')
+    codepoint_re = re.compile(r'^(\[[0-9a-zA-Z]{4,6}\])(.*)')
     non_id_char_re = re.compile(r'[^a-zA-Z\-]')
 
     # Process all lines
@@ -39,6 +48,7 @@ if __name__ == '__main__':
     out = []
     for line in lines:
         converted = arc_re.sub(convert_arc, line)
+        converted = codepoint_re.sub(convert_codepoint, line)
 
         matches = metadata_string_re.match(line)
         if matches:
