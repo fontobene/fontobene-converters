@@ -9,13 +9,32 @@ import sys
 FORMAT_VERSION = '0.0.0'
 
 
-def convert_arc(match):
+def format_number(num):
     """
-    Convert LFF angles to FontoBene angles.
+    Properly format a floating point number according the fontobene specifications.
     """
-    val = float(match.group()[2:])
-    converted_deg = math.atan(val) * 4 / math.pi
-    return ',{}'.format(converted_deg * 9)
+    rounded = round(float(num), 2)
+    rounded_str = "{:g}".format(rounded)
+    if rounded_str.startswith('-0.'):
+        rounded_str = '-' + rounded_str[2:]
+    elif rounded_str.startswith('0.'):
+        rounded_str = rounded_str[1:]
+    return rounded_str
+
+
+def convert_vertex(match):
+    """
+    Convert LFF vertex to FontoBene vertex.
+    """
+    x = format_number(match.groups()[0])
+    y = format_number(match.groups()[1])
+    bulge_str = match.groups()[3]
+    if bulge_str:
+        bulge_deg = math.atan(float(bulge_str)) * 4 / math.pi
+        bulge = format_number(bulge_deg * 9)
+        return '{},{},{}'.format(x, y, bulge)
+    else:
+        return '{},{}'.format(x, y)
 
 
 def convert_ref(match):
@@ -52,7 +71,9 @@ if __name__ == '__main__':
         lines = f.readlines()
 
     # Match regexes
-    arc_re = re.compile(r',A-?[0-9\.]+')
+    # Note: Some regexes are very tolerant in parsing LFF files because many LFF
+    # files contain small format errors, which we still want to parse properly...
+    vertex_re = re.compile(r'(-?[0-9\.]+),(-?[0-9\.]+)(,?A?(-?[0-9\.]+))?')
     ref_re = re.compile(r'C([0-9a-fA-F]{4,6})')
     metadata_string_re = re.compile(r'#\s*([a-zA-Z0-9\s]*):\s+(.+)')
     codepoint_re = re.compile(r'^(\[[0-9a-zA-Z]{4,6}\])(.*)')
@@ -69,7 +90,7 @@ if __name__ == '__main__':
             metadata[groups[0].lower()] = groups[1]
         else:
             converted = line
-            converted = arc_re.sub(convert_arc, converted)
+            converted = vertex_re.sub(convert_vertex, converted)
             converted = oneliner_re.sub(split_oneliner, converted)
             converted = ref_re.sub(convert_ref, converted)
             converted = codepoint_re.sub(convert_codepoint, converted)
