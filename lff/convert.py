@@ -47,7 +47,7 @@ if __name__ == '__main__':
     # Match regexes
     arc_re = re.compile(r',A-?[0-9\.]+')
     ref_re = re.compile(r'C([0-9a-fA-F]{4,6})')
-    metadata_string_re = re.compile(r'#\s*([a-zA-Z0-9]*):\s+(.+)')
+    metadata_string_re = re.compile(r'#\s*([a-zA-Z0-9\s]*):\s+(.+)')
     codepoint_re = re.compile(r'^(\[[0-9a-zA-Z]{4,6}\])(.*)')
     non_id_char_re = re.compile(r'[^a-zA-Z\-]')
 
