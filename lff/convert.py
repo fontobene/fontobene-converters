@@ -55,24 +55,22 @@ if __name__ == '__main__':
     metadata = {}
     out = []
     for line in lines:
-        converted = line
-        converted = arc_re.sub(convert_arc, converted)
-        converted = ref_re.sub(convert_ref, converted)
-        converted = codepoint_re.sub(convert_codepoint, converted)
-
         matches = metadata_string_re.match(line)
         if matches:
             groups = matches.groups()
             metadata[groups[0].lower()] = groups[1]
-
-        out.append(converted)
+        else:
+            converted = line
+            converted = arc_re.sub(convert_arc, converted)
+            converted = ref_re.sub(convert_ref, converted)
+            converted = codepoint_re.sub(convert_codepoint, converted)
+            out.append(converted)
 
     header = True
     for outline in out:
-        if header and not outline.startswith('#'):
+        if header:
             # End of header
             header = False
-            print('')
             print('[format]')
             print('format = FontoBene')
             print('format_version = {}'.format(FORMAT_VERSION))
