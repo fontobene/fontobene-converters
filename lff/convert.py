@@ -7,7 +7,7 @@ import sys
 import os
 
 
-FORMAT_VERSION = '0.0.0'
+FORMAT_VERSION = '1.0-WIP'
 
 
 def format_number(num):
