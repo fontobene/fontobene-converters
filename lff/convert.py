@@ -32,6 +32,13 @@ def convert_codepoint(match):
     groups = match.groups()
     return '{}{}'.format(groups[0].upper(), groups[1])
 
+def split_oneliner(match):
+    """
+    Split LFF one-liner (codepoint and reference on same line) into two lines
+    """
+    groups = match.groups()
+    return '{}{}\n{}'.format(groups[0], groups[1].rstrip(), groups[2])
+
 
 if __name__ == '__main__':
 
@@ -49,6 +56,7 @@ if __name__ == '__main__':
     ref_re = re.compile(r'C([0-9a-fA-F]{4,6})')
     metadata_string_re = re.compile(r'#\s*([a-zA-Z0-9\s]*):\s+(.+)')
     codepoint_re = re.compile(r'^(\[[0-9a-zA-Z]{4,6}\])(.*)')
+    oneliner_re = re.compile(r'^(\[[0-9a-zA-Z]{4,6}\])(.*)(C[0-9a-fA-F]{4,6})')
     non_id_char_re = re.compile(r'[^a-zA-Z\-]')
 
     # Process all lines
@@ -62,6 +70,7 @@ if __name__ == '__main__':
         else:
             converted = line
             converted = arc_re.sub(convert_arc, converted)
+            converted = oneliner_re.sub(split_oneliner, converted)
             converted = ref_re.sub(convert_ref, converted)
             converted = codepoint_re.sub(convert_codepoint, converted)
             out.append(converted)
