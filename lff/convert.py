@@ -87,6 +87,8 @@ if __name__ == '__main__':
             print('author = {}'.format(font_author))
             print('license = {}'.format(metadata.get('license', 'unknown')))
             print('')
+            print('---')
+            print('')
         else:
             # We're in the body
             print(outline, end='')
