@@ -60,6 +60,19 @@ def split_oneliner(match):
     return '{}{}\n{}'.format(groups[0], groups[1].rstrip(), groups[2])
 
 
+def move_bulge_parameter(match):
+    """
+    Move bulge parameter to start coordinate of arc segments (instead of end coordinate)
+    """
+    vertices = [v.split(',') for v in match.groups()[0].split(';')]
+    for i, vertex in enumerate(vertices):
+        if len(vertices[i]) > 2:
+            del vertices[i][2]
+        if len(vertices) > i + 1 and len(vertices[i + 1]) > 2:
+            vertices[i].append(vertices[i + 1][2])
+    return ';'.join([','.join(v) for v in vertices])
+
+
 if __name__ == '__main__':
 
     # Validate args
@@ -79,6 +92,7 @@ if __name__ == '__main__':
     metadata_string_re = re.compile(r'#\s*([a-zA-Z0-9\s]*):\s+(.+)')
     codepoint_re = re.compile(r'^(\[[0-9a-zA-Z]{4,6}\])(.*)')
     oneliner_re = re.compile(r'^(\[[0-9a-zA-Z]{4,6}\])(.*)(C[0-9a-fA-F]{4,6})')
+    polyline_re = re.compile(r'((-?[0-9\.]+,-?[0-9\.]+(,-?[0-9\.]+)?;?)+)')
     non_id_char_re = re.compile(r'[^a-zA-Z\-]')
 
     # Process all lines
@@ -95,6 +109,7 @@ if __name__ == '__main__':
             converted = oneliner_re.sub(split_oneliner, converted)
             converted = ref_re.sub(convert_ref, converted)
             converted = codepoint_re.sub(convert_codepoint, converted)
+            converted = polyline_re.sub(move_bulge_parameter, converted)
             out.append(converted)
 
     header = True
