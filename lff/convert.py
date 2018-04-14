@@ -4,6 +4,7 @@ LFF to FontoBene conversion script.
 import math
 import re
 import sys
+import os
 
 
 FORMAT_VERSION = '0.0.0'
@@ -114,8 +115,19 @@ if __name__ == '__main__':
             font_author = metadata.get('author', metadata.get('creator', 'converted'))
             print('author = {}'.format(font_author))
             print('license = {}'.format(metadata.get('license', 'unknown')))
+            print('letter_spacing = 1.8')
+            print('line_spacing = 15')
+            print('')
+            print('[user]')
+            print('lff_filename = {}'.format(os.path.basename(sys.argv[1])))
+            print('lff_LetterSpacing = {:g}'.format(float(metadata.get('LetterSpacing', 3))))
+            print('lff_WordSpacing = {:g}'.format(float(metadata.get('WordSpacing', 6.75))))
+            print('lff_LineSpacingFactor = {:g}'.format(float(metadata.get('LineSpacingFactor', 1))))
             print('')
             print('---')
+            print('')
+            print('[0020] SPACE')
+            print('~3.6')
             print('')
         else:
             # We're in the body
