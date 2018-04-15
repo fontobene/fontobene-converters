@@ -5,6 +5,8 @@
 NewStroke/Hershey to FontoBene conversion script.
 """
 import os
+import numpy as np
+from scipy import optimize
 from ctypes import *
 
 HEADER = """\
@@ -75,6 +77,73 @@ def convert_y(hershey):
     return value
 
 
+def calc_R(x,y, xc, yc):
+    """ calculate the distance of each 2D points from the center (xc, yc) """
+    return np.sqrt((x-xc)**2 + (y-yc)**2)
+
+
+def f(c, x, y):
+    """ calculate the algebraic distance between the data points and the mean circle centered at c=(xc, yc) """
+    Ri = calc_R(x, y, *c)
+    return Ri - Ri.mean()
+
+
+def leastsq_circle(x,y):
+    x_m = np.mean(x)
+    y_m = np.mean(y)
+    center_estimate = x_m, y_m
+    center, ier = optimize.leastsq(f, center_estimate, args=(x, y))
+    xc, yc = center
+    Ri = calc_R(x, y, *center)
+    R = Ri.mean()
+    residu = np.sum((Ri - R)**2)
+    return xc, yc, R, residu
+
+
+def calc_segment_length(start, end):
+    dx = end[0] - start[0]
+    dy = end[1] - start[1]
+    return np.sqrt(dx*dx + dy*dy)
+
+
+def try_convert_polyline_to_arc(polyline):
+    lengths = [calc_segment_length(polyline[i], polyline[i+1]) for i in range(0, len(polyline)-1)]
+    #if np.mean(lengths) > 2:
+    #    return None
+    if np.std(lengths) > 0.3:
+        return None
+    xc, yc, r, residu = leastsq_circle([v[0] for v in polyline], [v[1] for v in polyline])
+    if residu / len(polyline) > 0.01:
+        return None
+    if r > 2:
+        return None
+    x1 = polyline[0][0]
+    y1 = polyline[0][1]
+    a1 = np.arctan2(y1 - yc, x1 - xc)
+    x2 = polyline[-1][0]
+    y2 = polyline[-1][1]
+    a2 = np.arctan2(y2 - yc, x2 - xc)
+    angle = (a2 - a1) * 9 / np.pi
+    return [(x1, y1, angle), (x2, y2, polyline[-1][2])]
+
+
+def convert_polyline_arcs(polyline):
+    vertices = list()
+    i = 0
+    while i < len(polyline):
+        arc = None
+        for k in range(len(polyline) - i, 2, -1):
+            arc = try_convert_polyline_to_arc(polyline[i:i+k])
+            if arc:
+                vertices += arc
+                i += k - 1
+                break
+        if not arc:
+            vertices.append(polyline[i])
+            i += 1
+    return vertices
+
+
 def convert_polyline(hershey):
     x_min = None
     x_max = None
@@ -95,7 +164,7 @@ def convert_polylines(hershey):
     for p in hershey.split(' R'):
         if len(p):
             polyline, x_min, x_max = convert_polyline(p)
-            polylines.append(polyline)
+            polylines.append(convert_polyline_arcs(polyline))
             x_min_total = min(x_min, x_min_total) if x_min_total else x_min
             x_max_total = max(x_max, x_max_total) if x_max_total else x_max
     return polylines, x_min_total, x_max_total
