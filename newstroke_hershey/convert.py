@@ -110,13 +110,13 @@ def try_convert_polyline_to_arc(polyline):
     lengths = [calc_segment_length(polyline[i], polyline[i+1]) for i in range(0, len(polyline)-1)]
     #if np.mean(lengths) > 2:
     #    return None
-    if np.std(lengths) > 0.3:
-        return None
+    #if np.std(lengths) > 0.3:
+    #    return None
     xc, yc, r, residu = leastsq_circle([v[0] for v in polyline], [v[1] for v in polyline])
     if residu / len(polyline) > 0.01:
         return None
-    if r > 2:
-        return None
+    #if r > 2:
+    #    return None
     x1 = polyline[0][0]
     y1 = polyline[0][1]
     a1 = np.arctan2(y1 - yc, x1 - xc)
@@ -164,6 +164,7 @@ def convert_polylines(hershey):
     for p in hershey.split(' R'):
         if len(p):
             polyline, x_min, x_max = convert_polyline(p)
+            polylines.append(polyline)
             polylines.append(convert_polyline_arcs(polyline))
             x_min_total = min(x_min, x_min_total) if x_min_total else x_min
             x_max_total = max(x_max, x_max_total) if x_max_total else x_max
